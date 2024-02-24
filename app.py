@@ -1,6 +1,7 @@
 from prefect import flow
 import numpy as np
 import pandas as pd
+import os
 
 
 def extract(num_rows: int = 100) -> pd.DataFrame:
@@ -8,7 +9,7 @@ def extract(num_rows: int = 100) -> pd.DataFrame:
     data = {}
 
     data['string_column'] = np.random.choice(
-        ['apple', 'banana', 'grape'], size=num_rows)
+        ['abc', 'def', 'ghi'], size=num_rows)
 
     data['int_column'] = np.random.randint(1, 100, size=num_rows)
 
@@ -24,15 +25,19 @@ def transform(df: pd.DataFrame):
 
     df['int_column'] = df['int_column']-2
     df['float_column'] = df['float_column']*2
-    pass
+
+    return df
 
 
-def load(data: list, path: str):
-    pass
+def load(df: pd.DataFrame, path: str):
+    print(path)
+    df.to_csv(path, sep=';')
 
 
 if __name__ == '__main__':
 
     df = extract()
 
-    print(df.head())
+    df = transform(df)
+
+    load(df, str(os.getcwd()) + '\\' + 'etl.csv')
