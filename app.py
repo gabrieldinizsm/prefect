@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-def extract(num_rows: int = 100) -> dict:
+def extract(num_rows: int = 100) -> pd.DataFrame:
 
     data = {}
 
@@ -20,7 +20,10 @@ def extract(num_rows: int = 100) -> dict:
     return pd.DataFrame(data)
 
 
-def transform(data: list):
+def transform(df: pd.DataFrame):
+
+    df['int_column'] = df['int_column']-2
+    df['float_column'] = df['float_column']*2
     pass
 
 
@@ -28,6 +31,8 @@ def load(data: list, path: str):
     pass
 
 
-df = extract()
+if __name__ == '__main__':
 
-print(df.head())
+    df = extract()
+
+    print(df.head())
