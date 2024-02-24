@@ -2,6 +2,7 @@ from prefect import task, flow
 import numpy as np
 import pandas as pd
 import os
+from datetime import datetime
 
 
 @task
@@ -22,19 +23,19 @@ def transform(df: pd.DataFrame):
 
     df['int_column'] = df['int_column']-2
     df['float_column'] = df['float_column']*2
-    print(df.head())
     return df
 
 
 @task
 def load(df: pd.DataFrame, path: str):
-    print(path)
     df.to_csv(path, sep=';')
 
 
 @flow(log_prints=True)
 def main():
+    print(f"Started at: {datetime.now()}")
     load(transform(extract(100)), str(os.getcwd()) + '\\' + 'etl.csv')
+    print(f"Finished at: {datetime.now()}")
 
 
 if __name__ == '__main__':
