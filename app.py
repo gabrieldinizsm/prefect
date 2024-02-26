@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import httpx
 
 
-@task(retries=1)
+@task(retries=5, retry_delay_seconds=60)
 def get_repo_info(repo_owner: str = "gabrieldinizsm", repo_name: str = "prefect"):
     """Get info about a repo - will retry twice after failing"""
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
@@ -17,7 +17,7 @@ def get_repo_info(repo_owner: str = "gabrieldinizsm", repo_name: str = "prefect"
     return repo_info
 
 
-@task
+@task(retries=5, retry_delay_seconds=60)
 def extract(num_rows: int = 100) -> pd.DataFrame:
 
     data = {}
@@ -30,7 +30,7 @@ def extract(num_rows: int = 100) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
+@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1), retries=5, retry_delay_seconds=60)
 def transform(df: pd.DataFrame):
 
     df['int_column'] = df['int_column']-2
