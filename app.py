@@ -1,8 +1,20 @@
 from prefect import task, flow
+from prefect.tasks import task_input_hash
 import numpy as np
 import pandas as pd
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import httpx
+
+
+@task(retries=1)
+def get_repo_info(repo_owner: str = "gabrieldinizsm", repo_name: str = "prefect"):
+    """Get info about a repo - will retry twice after failing"""
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
+    api_response = httpx.get(url)
+    api_response.raise_for_status()
+    repo_info = api_response.json()
+    return repo_info
 
 
 @task
@@ -18,7 +30,7 @@ def extract(num_rows: int = 100) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-@task
+@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
 def transform(df: pd.DataFrame):
 
     df['int_column'] = df['int_column']-2
@@ -31,7 +43,7 @@ def load(df: pd.DataFrame, path: str):
     df.to_csv(path, sep=';')
 
 
-@flow(log_prints=True)
+@flow
 def main():
     print(f"Started at: {datetime.now()}")
     load(transform(extract(100)), str(os.getcwd()) + '\\' + 'etl.csv')
